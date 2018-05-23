@@ -26,27 +26,27 @@ class Window(QWidget):
         
 '''deterimining the deisred state'''
 import Speedometer as sp
+from PID import calculate
 
 class cruise_control():
     desired_speed=0
     def __init__(self):
         super().__init__()
-        self.set_speed()        
+        self.on_off()        
     def resume(self):
         '''Resume the vehicle to the previously set speed'''
         
     def set_speed(self):
         '''Set the current read speed as the desired speed'''
         self.desired_speed=sp.speedometer.find_speed(self)
-#        print(a)
         return self.desired_speed
     
     def run(self):
         '''Maintain the deisred speed via a PID class'''
         self.actual_speed=sp.speedometer.find_speed(self)
-        
         while self.on_off==True:
-            do_something_for_pid_controller=None 
+            scalar=calculate(self.set_speed(),self.actual_speed,.001,20,20,20)
+            
         
     def on_off(self):
         '''Determine whether the crusie module is active'''
@@ -55,7 +55,7 @@ class cruise_control():
         
     def cancel(self):
         '''Cancels cruise, but still maintains the knowns speed'''
-        
+            
         
 if __name__=="__main__":
     app = QApplication(sys.argv)
