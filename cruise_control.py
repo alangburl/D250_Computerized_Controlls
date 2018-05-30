@@ -1,5 +1,5 @@
 import sys, time
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QLCDNumber, QSpinBox, QVBoxLayout, QProgressBar
+from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QLCDNumber, QVBoxLayout, QProgressBar,QCheckBox
 from PyQt5.QtCore import QThread, pyqtSignal
 
 class Window(QWidget):
@@ -14,8 +14,10 @@ class Window(QWidget):
 #        self.button.clicked.connect(self.initUI)
         self.close=QPushButton('Close', self)
 #        self.close.clicked.connect(self.closeEvent) 
+        self.tryl=QCheckBox(self)
         self.cruise=cruise_control()
         layout = QVBoxLayout(self)
+        layout.addWidget(self.tryl)
         layout.addWidget(self.close)
         layout.addWidget(self.set_speed)
         layout.addWidget(self.button)
@@ -27,13 +29,12 @@ class Window(QWidget):
 '''deterimining the deisred state'''
 import Speedometer as sp
 from PID import calculate
-import time
 
 class cruise_control():
     desired_speed=0
     def __init__(self):
         super().__init__()
-        self.on_off()        
+#        self.on_off()        
     def resume(self):
         '''Resume the vehicle to the previously set speed'''
         
@@ -42,13 +43,13 @@ class cruise_control():
         self.desired_speed=sp.speedometer.find_speed(self)
         return self.desired_speed
     
-    def run(self):
+    def run(cruise_state):
         '''Maintain the deisred speed via a PID class'''
-        self.actual_speed=sp.speedometer.find_speed(self)
+        actual_speed=sp.speedometer.find_speed(self)
         past_time=time.time()
-        while self.on_off==True:
+        while crusie_state==True:
             current_time=time.time()
-            scalar=calculate(self.set_speed(),self.actual_speed,current_time-past_time,20,20,20)
+            scalar=calculate(self.set_speed(),actual_speed,current_time-past_time,20,20,20)
             past_time=current_time
             return scalar
         
@@ -56,6 +57,7 @@ class cruise_control():
         '''Determine whether the crusie module is active'''
 #        number_of_hits=int
         on_off=bool
+        
         
         if number_of_hits==int:
             number_of_hits=1
@@ -66,16 +68,16 @@ class cruise_control():
         elif number_of_hits%2==0:
             number_of_hits+=1
             on_off=True
-        return on_off, number_of_hits
+        return on_off
         
     def cancel(self):
         '''Cancels cruise, but still maintains the knowns speed'''
             
         
-#if __name__=="__main__":
-#    app = QApplication(sys.argv)
-#    window = Window()
-#    window.show()
-#    sys.exit(app.exec_())
+if __name__=="__main__":
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
+    sys.exit(app.exec_())
     
         
