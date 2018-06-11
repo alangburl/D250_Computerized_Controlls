@@ -1,32 +1,3 @@
-import sys, time
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QLCDNumber, QVBoxLayout, QProgressBar,QCheckBox
-from PyQt5.QtCore import QThread, pyqtSignal
-
-class Window(QWidget):
-    '''Developing the GUI'''
-    def __init__(self):
-        '''Initialization of the GUI'''
-        super(Window, self).__init__()
-        
-        self.set_speed = QLCDNumber(self)
-        self.button = QPushButton('Start', self)
-        self.progress = QProgressBar(self)
-#        self.button.clicked.connect(self.initUI)
-        self.close=QPushButton('Close', self)
-#        self.close.clicked.connect(self.closeEvent) 
-        self.tryl=QCheckBox(self)
-        self.cruise=cruise_control()
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.tryl)
-        layout.addWidget(self.close)
-        layout.addWidget(self.set_speed)
-        layout.addWidget(self.button)
-        layout.addWidget(self.progress)
-        self.setWindowTitle('Gauges')
-        self.set_speed.display(self.cruise.set_speed())
-        
-        
-'''deterimining the deisred state'''
 import Speedometer as sp
 from PID import calculate
 
@@ -45,7 +16,7 @@ class cruise_control():
     
     def run(cruise_state):
         '''Maintain the deisred speed via a PID class'''
-        actual_speed=sp.speedometer.find_speed(self)
+        actual_speed=sp.find_speed(self)
         past_time=time.time()
         while crusie_state==True:
             current_time=time.time()
