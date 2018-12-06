@@ -11,7 +11,7 @@ import PyQt5.QtCore as q
 class Display(QWidget):
     def __init__(self):
         super().__init__()
-        self.setGeometry(800,480,800,480)
+        self.showMaximized()
         self.setWindowTitle('D250 Speedometer v1.0')
         font=QFont()
         font.setPointSize(16)
@@ -84,6 +84,7 @@ class Display(QWidget):
         self.th=Thread(self)
         self.th.changeprogressbar.connect(self.throttle_position.setValue)
         self.th.changelcd.connect(self.speed.display)
+        self.th.change_odometer.connect(self.cruise_indicator.setText)
         self.th.start()
         
     def on_off(self):
@@ -96,14 +97,21 @@ class Display(QWidget):
     def resumes(self):
         '''Resumes the pickup to set speed'''
         self.cruise_indicator.setText('Resuming')
+        time.sleep(2)
+        self.th.change_odometer.connect(self.cruise_indicator.setText)
         
     def cancels(self):
         '''Cancels and keeps set speed'''
         self.cruise_indicator.setText('Cancels')
+        time.sleep(2)
+        self.th.change_odometer.connect(self.cruise_indicator.setText)
         
     def sets(self):
         '''Sets the speed for the cruise control'''
         self.cruise_indicator.setText('Set')
+        time.sleep(2)
+        self.th.change_odometer.connect(self.cruise_indicator.setText)
+    
     
 import Speedometer as sp
    
@@ -111,6 +119,7 @@ class Thread(QThread):
     '''Creates the thread to update the progress bar'''
     changeprogressbar=pyqtSignal(int)
     changelcd=pyqtSignal(int)
+    change_odometer=pyqtSignal(str)
     
     def __init__(self, parent=None):
         '''Setting up the thread'''
@@ -119,7 +128,28 @@ class Thread(QThread):
     
     def run(self):
         '''Starting the thread'''
-        self.changelcd.emit(int(sp.find_speed()[0]))
+        file=open('odometer.csv','r+')
+        mile=float(file.readlines()[0])
+        st=time.time()
+        delta=0
+        while delta<6.0:
+            self.changelcd.emit(int(sp.find_speed()[0]))
+            delta_mileage=sp.find_speed()[2]
+            mileage_new=delta_mileage+mile
+            mile=mileage_new
+            self.change_odometer.emit(str(round(mileage_new,2)))
+#            print(mileage_new)
+            speed=sp.find_speed()[0]
+            if speed<0.1:
+                file.seek(0,0)
+                file.truncate(0)
+                file.write(str(mileage_new))
+                file.close()
+                time.sleep(0.25)
+                file=open('odometer.csv','r+')
+                mile=float(file.readlines()[0])
+                delta=time.time-st
+            
             
     def stop(self):
         '''Stopping the thread'''
@@ -135,4 +165,3 @@ if __name__ == "__main__":
     window.show()
     sys.exit(app.exec_())
     end=time.time()
-    print(end-start)
